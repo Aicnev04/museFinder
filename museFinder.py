@@ -1,11 +1,18 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import os
+
+def wait_until_found(driver, by, element):
+    try:
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((by, element)))
+    except:
+        print("Could not download file")
+        driver.quit()
+        exit(1)
 
 #Directory to send downloaded file
 download_path = "C:\\Users\\richi\\OneDrive\\Desktop\\DJ Songs"
@@ -26,29 +33,22 @@ driver = webdriver.Chrome(options=op)
 driver.get("https://www.youtube.com")
 
 #Browser waits for search bar to be ready
-try:
-    print("Opening Youtube")
-    element = WebDriverWait(driver, 60).until(EC.presence_of_element_located(("name", "search_query"))) 
-    print("Youtube Opened")
-except:
-    print("Could not download file")
-    driver.quit()
+print("Opening Youtube")
+wait_until_found(driver, By.NAME, "search_query")
+
 
 #Searches for song
-youtube_search = driver.find_element("name", "search_query")
+youtube_search = driver.find_element(By.NAME, "search_query")
 youtube_search.send_keys(band_name + " " + song_name)
 youtube_search.send_keys(Keys.ENTER)
 
 #Browser waits for song to be found
-try:
-    print("Finding Song")
-    element = WebDriverWait(driver, 60).until(EC.presence_of_element_located(("xpath", '(//a[@id="video-title"])[1]'))) 
-except:
-    print("Could not download file")
-    driver.quit()
+print("Finding Song")
+wait_until_found(driver, By.XPATH, '(//a[@id="video-title"])[1]')
+
 
 #Clicks on first video
-first_video = driver.find_element("xpath", '(//a[@id="video-title"])[1]')
+first_video = driver.find_element(By.XPATH, '(//a[@id="video-title"])[1]')
 first_video.click()
 print("Song found")
 time.sleep(3)
@@ -66,28 +66,20 @@ mp3_search.send_keys(Keys.ENTER)
 print("Waiting for song file to process")
 
 #Browser waits for the download button
-try:
-    element = WebDriverWait(driver, 60).until(EC.presence_of_element_located(("xpath", "//button[text()='Download']"))) 
-except:
-    print("Could not download file")
-    driver.quit()
+wait_until_found(driver, By.XPATH, "//button[text()='Download']")
+
 
 #Downloads mp3 file
-download = driver.find_element("xpath", "//button[text()='Download']")
+download = driver.find_element(By.XPATH, "//button[text()='Download']")
 download.click()
 print("Downloading song")
 
 #Browser waits for song name
-try:
-    element = WebDriverWait(driver, 60).until(EC.presence_of_element_located(("xpath", "//form/div"))) 
-except:
-    print("Could not download file")
-    driver.quit()
+wait_until_found(driver, By.XPATH, "//form/div")
 
-filename = driver.find_element("xpath", "//form/div")
+filename = driver.find_element(By.XPATH, "//form/div")
 filename = filename.text + ".mp3"
 full_path = os.path.join(download_path, filename)
 WebDriverWait(driver, 60).until(lambda d: os.path.exists(full_path))
 driver.quit()
 print("Complete")
-
